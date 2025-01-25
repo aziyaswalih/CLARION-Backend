@@ -8,7 +8,7 @@ export class UserController {
   async register(req: Request, res: Response) {
     try {
       const user = await this.registerUseCase.execute(req.body);
-      res.status(201).json({ success: true, user });
+      res.status(201).json({ success: true, user:user,message:"Registration succesfull" });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
     }

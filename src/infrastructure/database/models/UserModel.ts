@@ -8,6 +8,7 @@ export interface IUser extends Document {
   isActive: boolean;
   profilePic: string;
   role: "admin" | "user" | "donor" | "volunteer";
+  is_verified: boolean;
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -19,6 +20,7 @@ const UserSchema: Schema<IUser> = new Schema(
     profilePic: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
     role: { type: String, enum: ["admin", "user", "donor", "volunteer"], default: "user" },
+    is_verified: {type: Boolean,default: false}
   },
   { timestamps: true }
 );

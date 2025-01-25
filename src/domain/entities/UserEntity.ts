@@ -8,6 +8,7 @@ export class UserEntity {
     public phone: string,
     public isActive: boolean,
     public role: "admin" | "donor" | "volunteer" | "user",
+    public is_verified: boolean,
     public password: string,
     public profilePic: string
   ) {}

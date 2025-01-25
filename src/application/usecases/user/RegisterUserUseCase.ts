@@ -10,7 +10,7 @@ export class RegisterUserUseCase {
     if (existingUser) throw new Error("User already exists");
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const newUser = new UserEntity("", data.name, data.email, data.phone, false, data.role, hashedPassword, "");
+    const newUser = new UserEntity("", data.name, data.email, data.phone, false, data.role,false, hashedPassword, "");
 
     return this.userRepository.create(newUser);
   }
