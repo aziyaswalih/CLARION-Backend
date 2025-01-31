@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import userRoutes from "./presentation/routes/userRoutes";
+import adminRoutes from "./presentation/routes/adminRoutes";
 import { connectDB } from "./infrastructure/database/connection";
 import dotenv from "dotenv";
 
@@ -18,6 +19,7 @@ connectDB();
 
 // Routes
 app.use("/api/user", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health Check
 app.get("/health", (req: Request, res: Response) => {

@@ -14,6 +14,7 @@ export class UserMongoRepository implements IUserRepository {
       user.phone,
       user.isActive,
       user.role,
+      user.is_verified,
       user.password,
       user.profilePic
     );
@@ -37,8 +38,9 @@ export class UserMongoRepository implements IUserRepository {
       userData.phone,
       userData.isActive,
       userData.role,
+      userData.is_verified,
       userData.password,
-      userData.profilePic
+      userData.profilePic,
     );
   }
 
@@ -53,6 +55,7 @@ export class UserMongoRepository implements IUserRepository {
       user.phone,
       user.isActive,
       user.role,
+      user.is_verified,
       user.password,
       user.profilePic
     );
@@ -69,6 +72,7 @@ export class UserMongoRepository implements IUserRepository {
       user.phone,
       user.isActive,
       user.role,
+      user.is_verified,
       user.password,
       user.profilePic
     );
@@ -85,6 +89,7 @@ export class UserMongoRepository implements IUserRepository {
       user.phone,
       user.isActive,
       user.role,
+      user.is_verified,
       user.password,
       user.profilePic
     );
