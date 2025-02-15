@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 export class ResetPasswordUseCase {
   constructor(private userRepository: IUserRepository) {}
 
-  async execute(email: string, otp: string, newPassword: string) {
+  async execute(email: string, newPassword: string) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new Error("User not found");
 

@@ -5,7 +5,7 @@ import { UserMongoRepository } from "../../infrastructure/repositories/user/User
 import { BeneficiaryController } from "../controllers/BeneficiaryController";
 import { VolunteerController } from "../controllers/VolunteerController";
 import { DonorController } from "../controllers/DonorController";
-import { RegisterUserUseCase } from "../../application/usecases/user/RegisterUserUseCase";
+// import { RegisterUserUseCase } from "../../application/usecases/user/RegisterUserUseCase";
 const router = express.Router();
 const userRepository = new UserMongoRepository();
 const loginUseCase = new LoginAdminUseCase(userRepository);
@@ -15,7 +15,6 @@ const donorController = new DonorController()
 const adminController = new AdminController(
     loginUseCase
 )
-
 
 
 router.post("/login", (req, res) => adminController.login(req,res));

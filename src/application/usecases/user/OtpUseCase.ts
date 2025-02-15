@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
+import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
 
 export class OtpUseCase {
   private jwtSecret: string;
 
-  constructor() {
+  constructor(private userRepository: IUserRepository) {
     this.jwtSecret = process.env.JWT_SECRET || "your_secret_key";
+    
   }
 
   // Generate an OTP JWT
@@ -18,10 +20,19 @@ export class OtpUseCase {
   }
 
   // Verify an OTP JWT
-  verifyOtpToken(token: string, otp: string): boolean {
+  async verifyOtpToken(token: string, otp: string): Promise<boolean> {
     try {
       const decoded = jwt.verify(token, this.jwtSecret) as { email: string; otp: string };
-      return decoded.otp === otp;
+      console.log(decoded,decoded.otp,otp, 'otp usecase');
+      const user= await this.userRepository.findByEmail(decoded.email)
+      if(decoded.otp === otp && user){
+        console.log(user, 'user from otpusecase');
+        
+        this.userRepository.update(user.id,{is_verified:true})
+        return true;
+      }else{
+        return false
+      }
     } catch (error) {
       throw new Error("Invalid or expired OTP.");
     }

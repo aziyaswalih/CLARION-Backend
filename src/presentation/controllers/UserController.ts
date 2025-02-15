@@ -1,10 +1,12 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { LoginUserUseCase } from "../../application/usecases/user/LoginUserUseCase";
 import { RegisterUserUseCase } from "../../application/usecases/user/RegisterUserUseCase";
 import { OtpUseCase } from "../../application/usecases/user/OtpUseCase";
 import { EmailService } from "../../infrastructure/services/EmailService";
-import { IUserRepository } from "../../domain/interfaces/IUserRepository";
-import bcrypt from "bcrypt";
+import { ResetPasswordUseCase } from "../../application/usecases/user/ResetUserUseCase";
+import { User_Google_Auth_useCase } from "../../infrastructure/services/AuthService";
+import jwt from "jsonwebtoken";
+
 
 export class UserController {
   constructor(
@@ -12,7 +14,8 @@ export class UserController {
     private registerUseCase: RegisterUserUseCase,
     private otpUseCase: OtpUseCase,
     private emailService: EmailService,
-    private userRepository: IUserRepository
+    private resetPasswordUseCase: ResetPasswordUseCase,
+    private AuthService: User_Google_Auth_useCase,
   ) {}
 
   // Register User and Send OTP
@@ -65,36 +68,13 @@ export class UserController {
     }
   }
 
-  async resetpassword (req: Request, res: Response) {
+  async resetPassword(req: Request, res: Response) {
     try {
       const { email, password } = req.body;
-      console.log(email,password);
-      
-      // Validate request
-      if (!email  || !password) {
-        return res.status(400).json({ success: false, message: "All fields are required" });
-      }
-      // Find user by email
-      const user = await this.userRepository.findByEmail(email as string);
-      // need to make some changes here reset password implementing only 
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-  
-      
-  
-      // Hash the new password
-      const hashedPassword = await bcrypt.hash(password, 10);
-      
-      // Update password in database and clear OTP
-      // user.password = hashedPassword;
-      const updated = await this.userRepository.update(user.id,{password:hashedPassword});
-      
+      await this.resetPasswordUseCase.execute(email, password);
       res.status(200).json({ success: true, message: "Password reset successfully" });
-  
-    } catch (error) {
-      console.error("Error resetting password:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
+    } catch (error:any) {
+      res.status(400).json({ success: false, message: error.message || "Error resetting password" });
     }
   }
 
@@ -139,7 +119,7 @@ export class UserController {
       console.log(token,otp,'usercontroler verify otp');
       
       // Verify the OTP using the OTP use case
-      const isValid = this.otpUseCase.verifyOtpToken(token, otp);
+      const isValid = await this.otpUseCase.verifyOtpToken(token, otp);
 
       if (!isValid) {
         throw new Error("Invalid OTP.");
@@ -150,4 +130,35 @@ export class UserController {
       res.status(400).json({ success: false, message: "catch from verify otp" });
     }
   }
+  
+async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
+  try {
+    console.log("google Signin");
+
+    const { credential } = req.body;
+    console.log(credential);
+
+    const user = await this.AuthService.execute(credential);
+    // const refresh_token = GenerateRefreshToken(user.id, user.role);
+    // const access_token = GenerateAccessToken(user.id, user.role);
+
+    const { password, ...without } = user;
+
+    // console.log("tokenssss    " + access_token, refresh_token);
+    const token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+
+    res
+      // .cookie("user_refreshToken", refresh_token, {
+      //   httpOnly: true,
+      // })
+      .status(200)
+      .json({ message: "login success", user: without, token });
+  } catch (error: any) {
+    console.log("error -> usercntrol - > googleSignin", error.message);
+    next(error);
+  }
 }
+}
+
+
+

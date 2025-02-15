@@ -7,14 +7,17 @@ import { LoginUserUseCase } from "../../application/usecases/user/LoginUserUseCa
 import { RegisterUserUseCase } from "../../application/usecases/user/RegisterUserUseCase";
 import { OtpUseCase } from "../../application/usecases/user/OtpUseCase";
 import { EmailService } from "../../infrastructure/services/EmailService";
-
+import { ResetPasswordUseCase } from "../../application/usecases/user/ResetUserUseCase";
+import {User_Google_Auth_useCase} from '../../infrastructure/services/AuthService'
 
 // Instantiate the necessary dependencies
 const userRepository = new UserMongoRepository();
 const loginUseCase = new LoginUserUseCase(userRepository);
 const registerUseCase = new RegisterUserUseCase(userRepository);
-const otpUseCase = new OtpUseCase();
+const resetPasswordUseCase = new ResetPasswordUseCase(userRepository);
+const otpUseCase = new OtpUseCase(userRepository);
 const emailService = new EmailService();
+const AuthService = new User_Google_Auth_useCase(userRepository);
 
 // Instantiate the UserController with dependencies
 const userController = new UserController(
@@ -22,14 +25,16 @@ const userController = new UserController(
   registerUseCase,
   otpUseCase,
   emailService,
-  userRepository
+  resetPasswordUseCase,
+  AuthService
 );
 
 // Define routes
 router.post("/register", (req, res) => userController.register(req, res));
 router.post("/login", (req, res) => userController.login(req, res));
-router.post("/reset-password", (req, res) => userController.resetpassword(req, res));
+router.post("/reset-password", (req, res) => userController.resetPassword(req, res));
 router.post("/auth/send-otp", (req, res) => userController.resendOtp(req, res));
 router.post("/verifyOtp", (req, res) => userController.verifyOtp(req, res));
+router.post("/google", (req, res,  NextFunction) => userController.User_Google_Auth(req, res, NextFunction))
 
 export default router;
