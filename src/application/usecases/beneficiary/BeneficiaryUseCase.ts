@@ -1,5 +1,4 @@
-// src/use_cases/beneficiary/BeneficiaryUseCases.ts
-
+import { ObjectId } from "mongoose";
 import { Beneficiary } from "../../../domain/entities/BeneficiaryEntity";
 import { BeneficiaryRepository } from "../../../domain/interfaces/IBeneficiaryRepository";
 
@@ -16,7 +15,7 @@ export class SubmitBeneficiaryDetailsUseCase {
         if (!beneficiaryData.details || !beneficiaryData.condition || !beneficiaryData.gender) {
             throw new Error("Beneficiary details, condition, and gender are required."); // Example validation
         }
-
+        
         // 2. Business logic (e.g., enrich data, perform calculations, etc. - in this case, simple creation)
 
         // 3. Persist data using the repository
@@ -40,7 +39,7 @@ export class GetBeneficiaryUseCase {
 
         // 2. Retrieve beneficiary from repository
         const beneficiary = await this.beneficiaryRepository.findById(beneficiaryId);
-
+ 
         // 3. Business logic after retrieval (e.g., check permissions, etc. - simple retrieval in this case)
 
         // 4. Return the beneficiary (or null if not found)

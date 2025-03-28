@@ -7,7 +7,6 @@ import { ResetPasswordUseCase } from "../../application/usecases/user/ResetUserU
 import { User_Google_Auth_useCase } from "../../infrastructure/services/AuthService";
 import jwt from "jsonwebtoken";
 
-
 export class UserController {
   constructor(
     private loginUseCase: LoginUserUseCase,
@@ -15,7 +14,7 @@ export class UserController {
     private otpUseCase: OtpUseCase,
     private emailService: EmailService,
     private resetPasswordUseCase: ResetPasswordUseCase,
-    private AuthService: User_Google_Auth_useCase,
+    private AuthService: User_Google_Auth_useCase
   ) {}
 
   // Register User and Send OTP
@@ -23,16 +22,16 @@ export class UserController {
     try {
       // Execute registration use case
       console.log(req.body);
-      
-      const{name,email,password,phone,role}=req.body
-      if(!name||!email||!password||!phone||!role)return res.status(401).json({error:"Missing field"})
+
+      const { name, email, password, phone, role } = req.body;
+      if (!name || !email || !password || !phone || !role)
+        return res.status(HttpStatus.UNAUTHORIZED).json({ error: "Missing field" });
       const user = await this.registerUseCase.execute(req.body);
       console.log(user.password);
-      
-      // Generate OTP as a JWT token
-      const otp= this.otpUseCase.generateOtpToken(user.email);
-      console.log(otp,user.email,"usercontroller email and otp");
 
+      // Generate OTP as a JWT token
+      const otp = this.otpUseCase.generateOtpToken(user.email);
+      console.log(otp, user.email, "usercontroller email and otp");
 
       // Send OTP via email
       await this.emailService.sendEmail({
@@ -41,15 +40,15 @@ export class UserController {
         text: `Your OTP is: ${otp[0]}`,
       });
 
-      res.status(201).json({
+      res.status(HttpStatus.CREATED).json({
         success: true,
         user,
         message: "Registration successful. OTP sent to your email.",
-        token:otp[1]
+        token: otp[1],
       });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
-      console.log(error)
+      res.status(HttpStatus.BAD_REQUEST).json({ success: false, message: error.message });
+      console.log(error);
     }
   }
 
@@ -60,11 +59,21 @@ export class UserController {
 
       // Execute login use case
       const result = await this.loginUseCase.execute(email, password);
+      if(!result){
+        return res.status(HttpStatus.FORBIDDEN).json({success: false,message: 'User blocked'})
+      }
       console.log(result.user);
-      
-      res.status(200).json({ success: true, token:result.token,user:result.user });
+      res.cookie("refreshToken", result.refresh_token, {
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      res
+        .status(HttpStatus.OK)
+        .json({ success: true, token: result.token, user: result.user });
     } catch (error: any) {
-      res.status(401).json({ success: false, message: error.message });
+      res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: error.message });
     }
   }
 
@@ -72,9 +81,16 @@ export class UserController {
     try {
       const { email, password } = req.body;
       await this.resetPasswordUseCase.execute(email, password);
-      res.status(200).json({ success: true, message: "Password reset successfully" });
-    } catch (error:any) {
-      res.status(400).json({ success: false, message: error.message || "Error resetting password" });
+      res
+        .status(HttpStatus.OK)
+        .json({ success: true, message: "Password reset successfully" });
+    } catch (error: any) {
+      res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({
+          success: false,
+          message: error.message || "Error resetting password",
+        });
     }
   }
 
@@ -89,8 +105,8 @@ export class UserController {
 
       // Generate OTP as a JWT token
       const otp = this.otpUseCase.generateOtpToken(email);
-      console.log(otp,email,"usercontroller email and otp");
-      
+      console.log(otp, email, "usercontroller email and otp");
+
       // Send OTP via email
       await this.emailService.sendEmail({
         to: email,
@@ -98,13 +114,13 @@ export class UserController {
         text: `Your OTP is: ${otp[0]}`,
       });
 
-      res.status(200).json({
+      res.status(HttpStatus.OK).json({
         success: true,
         message: "OTP sent successfully.",
         otpToken: otp, // For debugging purposes; remove in production
       });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      res.status(HttpStatus.BAD_REQUEST).json({ success: false, message: error.message });
     }
   }
 
@@ -116,8 +132,8 @@ export class UserController {
       if (!token || !otp) {
         throw new Error("Token and OTP are required.");
       }
-      console.log(token,otp,'usercontroler verify otp');
-      
+      console.log(token, otp, "usercontroler verify otp");
+
       // Verify the OTP using the OTP use case
       const isValid = await this.otpUseCase.verifyOtpToken(token, otp);
 
@@ -125,40 +141,81 @@ export class UserController {
         throw new Error("Invalid OTP.");
       }
 
-      res.status(200).json({ success: true, message: "OTP verified successfully." });
+      res
+        .status(HttpStatus.OK)
+        .json({ success: true, message: "OTP verified successfully." });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: "catch from verify otp" });
+      res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ success: false, message: "catch from verify otp" });
     }
   }
-  
-async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
-  try {
-    console.log("google Signin");
 
-    const { credential } = req.body;
-    console.log(credential);
+  async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log("google Signin");
 
-    const user = await this.AuthService.execute(credential);
-    // const refresh_token = GenerateRefreshToken(user.id, user.role);
-    // const access_token = GenerateAccessToken(user.id, user.role);
+      const { credential } = req.body;
+      console.log(credential);
 
-    const { password, ...without } = user;
+      const user = await this.AuthService.execute(credential);
+      // const refresh_token = GenerateRefreshToken(user.id, user.role);
+      // const access_token = GenerateAccessToken(user.id, user.role);
 
-    // console.log("tokenssss    " + access_token, refresh_token);
-    const token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+      const { password, ...without } = user;
 
-    res
-      // .cookie("user_refreshToken", refresh_token, {
-      //   httpOnly: true,
-      // })
-      .status(200)
-      .json({ message: "login success", user: without, token });
-  } catch (error: any) {
-    console.log("error -> usercntrol - > googleSignin", error.message);
-    next(error);
+      // console.log("tokenssss    " + access_token, refresh_token);
+      const token = jwt.sign(
+        { id: user.id, role: user.role, name: user.name },
+        process.env.JWT_SECRET!,
+        { expiresIn: "1h" }
+      );
+
+      res
+        // .cookie("user_refreshToken", refresh_token, {
+        //   httpOnly: true,
+        // })
+        .status(HttpStatus.OK)
+        .json({ message: "login success", user: without, token });
+    } catch (error: any) {
+      console.log("error -> usercontrol - > googleSignin", error.message);
+      next(error);
+    }
   }
 }
+
+interface CustomJwtPayload extends jwt.JwtPayload {
+  id: string;
+  role: string;
+  name: string;
 }
+import { UserMongoRepository } from "../../infrastructure/repositories/user/UserMongoRepository";
+import { IUserRepository } from "../../domain/interfaces/IUserRepository";
+import { HttpStatus } from "../../constants/httpStatus";
+const userRepository:IUserRepository = new UserMongoRepository();
 
+export const refreshTokenController = async (req: Request, res: Response) => {
+  const token = req.cookies.refreshToken;
+  console.log(req.cookies,'cookies from refresh token route');
+  
+  if (!token) {
+    return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Refresh token missing" });
+  }
 
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as CustomJwtPayload
+    console.log(payload,'payload from refresh token end point');
+    
+    const newAccessToken = jwt.sign({ id: payload.id, role: payload.role,name:payload.name }, process.env.JWT_SECRET!, { expiresIn: "1h" }) 
+    console.log('refresh token working');
+    const user = await userRepository.findById(payload.id)
+            if(user && !user?.isActive){
+              res.clearCookie("refreshToken", { httpOnly: true, sameSite: 'strict' });
+              return res.status(HttpStatus.FORBIDDEN).json({ message: "Forbidden: You are blocked" });
 
+            }
+    return res.status(HttpStatus.OK).json({ token: newAccessToken });
+  } catch (error) {
+    return res.status(HttpStatus.FORBIDDEN).json({ message: "Invalid refresh token" });
+  }
+};

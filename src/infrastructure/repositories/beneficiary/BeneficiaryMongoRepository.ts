@@ -1,11 +1,13 @@
 import { BeneficiaryModel } from "../../database/models/BeneficiaryModel"; // Assuming you have BeneficiaryModel
 import { Beneficiary } from "../../../domain/entities/BeneficiaryEntity";
 import { BeneficiaryRepository } from "../../../domain/interfaces/IBeneficiaryRepository";
+import { ObjectId } from "mongoose";
 
 export class BeneficiaryMongoRepository implements BeneficiaryRepository {
     // Create a new beneficiary
     async create(beneficiary: Beneficiary): Promise<Beneficiary> {
         const beneficiaryData = await BeneficiaryModel.create({
+            user: beneficiary.user,
             details: beneficiary.details,
             condition: beneficiary.condition,
             dateOfBirth: beneficiary.dateOfBirth,
@@ -21,7 +23,9 @@ export class BeneficiaryMongoRepository implements BeneficiaryRepository {
 
     // Find a beneficiary by ID
     async findById(id: string): Promise<Beneficiary | null> {
-        const beneficiary = await BeneficiaryModel.findById(id);
+        console.log(id,'id beneficiary mongo repository');
+        
+        const beneficiary = await BeneficiaryModel.findOne({user:id}).populate('user');
         if (!beneficiary) return null;
         return this.toEntity(beneficiary);
     }
@@ -34,7 +38,7 @@ export class BeneficiaryMongoRepository implements BeneficiaryRepository {
 
     // Update a beneficiary's information
     async update(id: string, updates: Partial<Beneficiary>): Promise<Beneficiary | null> {
-        const beneficiary = await BeneficiaryModel.findByIdAndUpdate(id, updates, { new: true });
+        const beneficiary = await BeneficiaryModel.findOneAndUpdate({user:id}, updates, { new: true }).populate('user');
         if (!beneficiary) return null;
         return this.toEntity(beneficiary);
     }
@@ -49,6 +53,7 @@ export class BeneficiaryMongoRepository implements BeneficiaryRepository {
     private toEntity(beneficiaryDoc: any): Beneficiary {
         return {
             id: beneficiaryDoc._id.toString(), // Convert ObjectId to string
+            user: beneficiaryDoc.user,
             details: beneficiaryDoc.details,
             condition: beneficiaryDoc.condition,
             dateOfBirth: beneficiaryDoc.dateOfBirth,

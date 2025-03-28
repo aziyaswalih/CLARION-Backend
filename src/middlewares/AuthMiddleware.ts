@@ -1,19 +1,44 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { UserMongoRepository } from "../infrastructure/repositories/user/UserMongoRepository";
+import { IUserRepository } from "../domain/interfaces/IUserRepository";
+const userRepository:IUserRepository = new UserMongoRepository();
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const token = req.headers.authorization?.split(" ")[1];
+// Define a custom interface to extend JwtPayload and include 'role'
+interface CustomJwtPayload extends JwtPayload {
+  role: "user" | "donor" | "volunteer";
+}
+type AllowedRoles = "user" | "donor" | "volunteer";
 
-  if (!token) {
-    res.status(401).json({ success: false, message: "Access token is missing" });
-    return;
-  }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
-    (req as any).user = decoded; // Attach user info to the request object
-    next();
-  } catch (error) {
-    res.status(403).json({ success: false, message: "Invalid or expired token" });
-  }
+export const authMiddleware =  (allowedRoles: AllowedRoles[] ) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Unauthorized: No token provided" });
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload
+            // req.user = decoded;
+
+            if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
+                return res.status(403).json({ message: "Forbidden: Access denied for your role" });
+            }
+            const user = await userRepository.findById(decoded.id)
+            if(user && !user?.isActive){
+                res.clearCookie("refreshToken", { httpOnly: true, sameSite: 'strict' });
+                return res.status(403).json({ message: "Forbidden: You are blocked" });
+
+            }
+
+            next();
+        } catch (err) {
+            return res.status(401).json({ message: "Unauthorized: Invalid token" });
+        }
+    };
 };
+
+

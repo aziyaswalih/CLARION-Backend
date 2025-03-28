@@ -1,7 +1,7 @@
 // src/presentation/routes/beneficiaryRoutes.ts
 
 import express, { Request, Response } from 'express';
-import { BeneficiaryController } from '../../presentation/controllers/BeneficiaryController';
+import { BeneficiaryUserController } from '../../presentation/controllers/BeneficiaryUserController';
 import {
     SubmitBeneficiaryDetailsUseCase,
     GetBeneficiaryUseCase,
@@ -10,6 +10,8 @@ import {
     DeleteBeneficiaryUseCase  // Import Delete Use Case
 } from '../../application/usecases/beneficiary/BeneficiaryUseCase'; // ✅ Import from combined file
 import { BeneficiaryMongoRepository } from '../../infrastructure/repositories/beneficiary/BeneficiaryMongoRepository';
+import upload from '../../middlewares/multer';
+import { approveStory, getBeneficiaryStories, getStories, reviewStory, submitStory } from '../controllers/StoryController';
 
 const router = express.Router();
 
@@ -22,7 +24,7 @@ const updateBeneficiaryUseCase = new UpdateBeneficiaryUseCase(beneficiaryReposit
 const deleteBeneficiaryUseCase = new DeleteBeneficiaryUseCase(beneficiaryRepository); // Instantiate Delete Use Case
 
 
-const beneficiaryController = new BeneficiaryController(
+const beneficiaryController = new BeneficiaryUserController(
     submitBeneficiaryDetailsUseCase,
     getBeneficiaryUseCase,
     listBeneficiariesUseCase, // Inject List Use Case
@@ -30,13 +32,26 @@ const beneficiaryController = new BeneficiaryController(
     deleteBeneficiaryUseCase  // Inject Delete Use Case
 );
 
+    
 
 // Define routes
 router.post('/', (req: Request, res: Response) => beneficiaryController.submitDetails(req, res));
-router.get('/:id', (req: Request, res: Response) => beneficiaryController.getBeneficiary(req, res));
-router.get('/', (req: Request, res: Response) => beneficiaryController.listBeneficiaries(req, res)); // Route for listing
-router.put('/:id', (req: Request, res: Response) => beneficiaryController.updateBeneficiary(req, res)); // Route for update
-router.delete('/:id', (req: Request, res: Response) => beneficiaryController.deleteBeneficiary(req, res)); // Route for delete
-
+router.get('/profile', (req: Request, res: Response) => beneficiaryController.getBeneficiary(req, res));
+// router.get('/', (req: Request, res: Response) => beneficiaryController.listBeneficiaries(req, res)); // Route for listing
+router.put('/profile', upload.single('profilePic') , (req: Request, res: Response) => beneficiaryController.updateBeneficiary(req, res)); // Route for update
+// router.delete('/:id', (req: Request, res: Response) => beneficiaryController.deleteBeneficiary(req, res)); // Route for delete
+router.get('/stories',(req:Request, res:Response) => getStories(req,res))
+// router.post('/story', upload.array('images'), upload.array('documents'),(req:Request, res:Response) => submitStory)
+router.post(
+    '/story',
+    upload.fields([
+      { name: 'images', maxCount: 10 },
+      { name: 'documents', maxCount: 10 }
+    ]),
+    (req: Request, res: Response) => submitStory(req, res)
+  );
+  router.put('/story/:id',(req:Request,res:Response)=>approveStory(req,res))
+  router.put('/story/:id/review',(req:Request,res:Response)=>reviewStory(req,res))
+  
 
 export default router;

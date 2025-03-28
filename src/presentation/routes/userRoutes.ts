@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import { UserController } from "../controllers/UserController";
+import { refreshTokenController, UserController } from "../controllers/UserController";
 import { UserMongoRepository } from "../../infrastructure/repositories/user/UserMongoRepository";
 import { LoginUserUseCase } from "../../application/usecases/user/LoginUserUseCase";
 import { RegisterUserUseCase } from "../../application/usecases/user/RegisterUserUseCase";
@@ -33,8 +33,8 @@ const userController = new UserController(
 router.post("/register", (req, res) => userController.register(req, res));
 router.post("/login", (req, res) => userController.login(req, res));
 router.post("/reset-password", (req, res) => userController.resetPassword(req, res));
-router.post("/auth/send-otp", (req, res) => userController.resendOtp(req, res));
+router.post("/send-otp", (req, res) => userController.resendOtp(req, res));
 router.post("/verifyOtp", (req, res) => userController.verifyOtp(req, res));
 router.post("/google", (req, res,  NextFunction) => userController.User_Google_Auth(req, res, NextFunction))
-
+router.get('/refresh-token',(req,res)=> refreshTokenController(req,res))
 export default router;

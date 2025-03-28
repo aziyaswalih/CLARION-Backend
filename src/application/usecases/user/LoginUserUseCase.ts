@@ -14,9 +14,14 @@ export class LoginUserUseCase {
     
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new Error("Invalid credentials");
+    if(!user.isActive){
+      return null
+    }
+    const token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "1D" });
+    // refresh token no implemented
+    const refresh_token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "7D" });
 
-    const token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "1h" });
-
-    return {token, user} ;
+    return {token, user , refresh_token} ;
   }
+  
 }
