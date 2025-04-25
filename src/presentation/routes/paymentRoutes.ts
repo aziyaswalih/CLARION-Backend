@@ -53,11 +53,12 @@
 // export default router;
 
 import express from "express";
-import { createDonationController, verifyPaymentController } from "../controllers/PaymentController";
+import { createNewDonation, createDonationController, verifyPaymentController } from "../controllers/PaymentController";
 
 const router = express.Router();
 
 router.post("/create-Donation", createDonationController);
 router.post("/verify-payment", verifyPaymentController);
+router.post("/donation", createNewDonation); // For testing purposes, remove in production
 
 export default router;

@@ -11,7 +11,7 @@ import {
 } from '../../application/usecases/beneficiary/BeneficiaryUseCase'; // ✅ Import from combined file
 import { BeneficiaryMongoRepository } from '../../infrastructure/repositories/beneficiary/BeneficiaryMongoRepository';
 import upload from '../../middlewares/multer';
-import { approveStory, getBeneficiaryStories, getStories, reviewStory, submitStory } from '../controllers/StoryController';
+import { updateStory, getBeneficiaryStories, getStories, reviewStory, submitStory } from '../controllers/StoryController';
 
 const router = express.Router();
 
@@ -50,7 +50,10 @@ router.post(
     ]),
     (req: Request, res: Response) => submitStory(req, res)
   );
-  router.put('/story/:id',(req:Request,res:Response)=>approveStory(req,res))
+  router.put('/story/:id', upload.fields([
+    { name: 'images', maxCount: 10 },
+    { name: 'documents', maxCount: 10 }
+  ]), (req: Request, res: Response) => updateStory(req, res))
   router.put('/story/:id/review',(req:Request,res:Response)=>reviewStory(req,res))
   
 

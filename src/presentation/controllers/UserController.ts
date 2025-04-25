@@ -77,6 +77,16 @@ export class UserController {
     }
   }
 
+  // Logout User
+  async logout(req: Request, res: Response) {
+    try {
+      res.clearCookie("refreshToken", { httpOnly: true, sameSite: "strict", path: "/" });
+      res.status(HttpStatus.OK).json({ success: true, message: "Logged out successfully" });
+    } catch (error: any) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message });
+    }
+  }
+
   async resetPassword(req: Request, res: Response) {
     try {
       const { email, password } = req.body;
@@ -151,37 +161,76 @@ export class UserController {
     }
   }
 
-  async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
-    try {
-      console.log("google Signin");
+  // Google Auth Login
+async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
+  try {
+    console.log("Google Signin");
 
-      const { credential } = req.body;
-      console.log(credential);
+    const { credential } = req.body;
+    console.log(credential);
 
-      const user = await this.AuthService.execute(credential);
-      // const refresh_token = GenerateRefreshToken(user.id, user.role);
-      // const access_token = GenerateAccessToken(user.id, user.role);
+    const user = await this.AuthService.execute(credential);
+    const { password, ...without } = user;
 
-      const { password, ...without } = user;
+    // Generate tokens (make sure you have a refresh token strategy here)
+    const access_token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "1D" });
+        // refresh token no implemented
+    const refresh_token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "7D" });
+    
+    // Set refresh token in httpOnly cookie
+    res.cookie("refreshToken", refresh_token, {
+      httpOnly: true,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
-      // console.log("tokenssss    " + access_token, refresh_token);
-      const token = jwt.sign(
-        { id: user.id, role: user.role, name: user.name },
-        process.env.JWT_SECRET!,
-        { expiresIn: "1h" }
-      );
-
-      res
-        // .cookie("user_refreshToken", refresh_token, {
-        //   httpOnly: true,
-        // })
-        .status(HttpStatus.OK)
-        .json({ message: "login success", user: without, token });
-    } catch (error: any) {
-      console.log("error -> usercontrol - > googleSignin", error.message);
-      next(error);
-    }
+    // Send access token and user data in response
+    res.status(HttpStatus.OK).json({
+      success: true,
+      message: "Login success",
+      token: access_token,
+      user: without
+    });
+  } catch (error: any) {
+    console.log("error -> usercontrol -> googleSignin", error.message);
+    next(error);
   }
+}
+
+
+
+//   async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
+//     try {
+//       console.log("google Signin");
+
+//       const { credential } = req.body;
+//       console.log(credential);
+
+//       const user = await this.AuthService.execute(credential);
+//       // const refresh_token = GenerateRefreshToken(user.id, user.role);
+//       // const access_token = GenerateAccessToken(user.id, user.role);
+
+//       const { password, ...without } = user;
+
+//       // console.log("tokenssss    " + access_token, refresh_token);
+//       const token = jwt.sign(
+//         { id: user.id, role: user.role, name: user.name },
+//         process.env.JWT_SECRET!,
+//         { expiresIn: "1h" }
+//       );
+
+//       res
+//         // .cookie("user_refreshToken", refresh_token, {
+//         //   httpOnly: true,
+//         // })
+//         .status(HttpStatus.OK)
+//         .json({ message: "login success", user: without, token });
+//     } catch (error: any) {
+//       console.log("error -> usercontrol - > googleSignin", error.message);
+//       next(error);
+//     }
+//   }
 }
 
 interface CustomJwtPayload extends jwt.JwtPayload {

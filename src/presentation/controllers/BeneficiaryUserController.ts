@@ -102,8 +102,10 @@ export class BeneficiaryUserController {
             console.log(('update beneficiary ethi'));
             
             const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
-            let profilePicUrl;
+            let profilePicUrl=null
             if (req.file) {
+                console.log(req.file, 'file from beneficiary controller');
+                
                 profilePicUrl = `/uploads/${req.file.filename}`;
             }
     
@@ -112,11 +114,13 @@ export class BeneficiaryUserController {
                 ...req.body,
                 ...(profilePicUrl && { profilePic: profilePicUrl })
             };
+            console.log(updatedData, 'updated data from beneficiary controller');
+            
             const id = decoded.id;            
             const updates = req.body; // Assuming request body contains updates
             const updatedUser = await userUseCases.updateUser(decoded.id, updatedData);
 
-            const updatedBeneficiary = await this.updateBeneficiaryUseCase.execute(id, updates);
+            const updatedBeneficiary = await this.updateBeneficiaryUseCase.execute(id, {...updates,address:JSON.parse(updatedData.address),familyDetails:JSON.parse(updatedData.familyDetails)});
 
             if (updatedBeneficiary) {
                 res.status(HttpStatus.OK).json(updatedBeneficiary);

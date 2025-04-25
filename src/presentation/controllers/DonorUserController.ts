@@ -101,7 +101,7 @@ export class DonorController {
             console.log(updatedData,'updated data');
             
             const updatedDonor = await donorUseCases.updateDonor(decoded.id, {address:updatedData.address});
-            const updatedUser = await userUseCases.updateUser(decoded.id, updatedData.donorId);
+            const updatedUser = await userUseCases.updateUser(decoded.id, updatedData);
 
             if (!updatedDonor || !updatedUser) {
                 return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "Donor not found" });
@@ -126,6 +126,25 @@ export class DonorController {
         } catch (error: any) {
             console.error("Error deleting donor:", error);
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to delete donor", error: error.message });
+        }
+    }
+
+    static async getDonationsByDonorId(req: Request, res: Response) {
+        try {
+            const token = req.headers.authorization?.split(" ")[1];
+            if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Access token is missing" });
+
+            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
+            const donations = await donorUseCases.getDonationsByDonorId(decoded.id);
+
+            if (!donations) {
+                return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "No donations found" });
+            }
+
+            res.status(HttpStatus.OK).json({ success: true, message: "Donations retrieved successfully", data: donations });
+        } catch (error: any) {
+            console.error("Error fetching donations:", error);
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch donations", error: error.message });
         }
     }
 }

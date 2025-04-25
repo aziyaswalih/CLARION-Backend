@@ -19,4 +19,7 @@ router.put("/profile", upload.single('profilePic'), DonorController.updateDonor)
 // Delete donor by ID
 router.delete("/:id", DonorController.deleteDonor);
 
+// Get all donations made by a donor
+router.get("/donations", DonorController.getDonationsByDonorId);
+
 export default router;

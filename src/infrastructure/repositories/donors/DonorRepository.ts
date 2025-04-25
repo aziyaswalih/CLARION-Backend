@@ -1,6 +1,7 @@
 import DonorModel, { DonorDocument } from "../../../infrastructure/database/models/DonorModel";
 import { IDonorRepository } from "../../../domain/interfaces/IDonorRepository";
 import { Donor } from "../../../domain/entities/DonorEntity";
+import DonationModel from "../../database/models/DonationModel";
 
 export class DonorRepository implements IDonorRepository {
     async addDonor(donor: Donor): Promise<Donor> {
@@ -23,5 +24,12 @@ export class DonorRepository implements IDonorRepository {
     async deleteDonor(id: string): Promise<boolean> {
         const result = await DonorModel.findByIdAndDelete(id);
         return !!result;
+    }
+
+    async getDonationsByDonorId(donorId: string): Promise<any[]> {
+        const donations = await DonationModel.find({ donorId: donorId }).populate('storyId');
+        if (!donations) return [];  
+        return donations
+
     }
 }

@@ -77,8 +77,13 @@ export class UpdateBeneficiaryUseCase {
     }
 
     async execute(id: string, beneficiaryData: Beneficiary): Promise<Beneficiary | null> {
+
+        console.log(id,beneficiaryData,'id beneficiary data 2');
+
         // 1. Validate input data and ID
-        if (!id || !beneficiaryData.details) {
+        if (!id || !beneficiaryData) {
+            console.log(id,beneficiaryData,'id beneficiary data');
+            
             throw new Error("Beneficiary ID and details are required for update.");
         }
 

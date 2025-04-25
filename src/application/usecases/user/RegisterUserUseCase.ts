@@ -22,7 +22,7 @@ export class RegisterUserUseCase {
       data.name,
       data.email,
       data.phone,
-      false,
+      true,
       data.role,
       false,
       hashedPassword,

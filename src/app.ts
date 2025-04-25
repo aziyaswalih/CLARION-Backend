@@ -12,6 +12,8 @@ import cookieParser from 'cookie-parser';
 import { authMiddleware } from "./middlewares/AuthMiddleware";
 import donorRoutes from "./presentation/routes/donorRoutes";
 import { createClient } from 'redis';
+import storyRoutes from "./presentation/routes/storyRoutes";
+import walletRoutes from "./presentation/routes/walletRoutes";
 
 export const redisClient = createClient({
   url: 'redis://localhost:6379',
@@ -43,11 +45,12 @@ connectDB();
 // Routes
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/beneficiary",authMiddleware(['user','volunteer']), beneficiaryRoutes);
+app.use("/api/story", storyRoutes);
+app.use("/api/beneficiary",authMiddleware(['user','volunteer','donor']), beneficiaryRoutes);
 app.use("/api/volunteers",authMiddleware(['volunteer']), volunteerRoutes);
 app.use("/api/donor",authMiddleware(['donor']), donorRoutes);
-app.use("/api/payments",authMiddleware(['donor','volunteer']), paymentRoutes);
-
+app.use("/api/payments", paymentRoutes);
+app.use("/api/wallet", authMiddleware(['donor','user','volunteer']), walletRoutes);
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "OK", message: "Server is running smoothly" });

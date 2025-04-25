@@ -5,6 +5,8 @@ export class UserUseCases {
     constructor(private userRepo: IUserRepository) {}
 
     async updateUser(id: string, updateData: Partial<UserEntity>): Promise<UserEntity | null> {
+        console.log("Update Data from userusecase :", updateData,id);
+        
         return await this.userRepo.update(id, updateData)
     }
 

@@ -17,10 +17,16 @@ export class DonorUseCases {
     }
 
     async updateDonor(id: string, updateData: Partial<Donor>): Promise<Donor | null> {
-        return await this.donorRepo.updateDonor(id, updateData);
+        console.log("Update Data:", updateData.address);
+        
+        return await this.donorRepo.updateDonor(id, {...updateData, address: JSON.parse(updateData.address as string)});
     }
 
     async deleteDonor(id: string): Promise<boolean> {
         return await this.donorRepo.deleteDonor(id);
+    }
+
+    async getDonationsByDonorId(donorId: string): Promise<any[]> {
+        return await this.donorRepo.getDonationsByDonorId(donorId);
     }
 }

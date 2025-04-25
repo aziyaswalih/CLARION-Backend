@@ -1,7 +1,7 @@
 import { ObjectId } from "mongoose";
 import { IUser } from "../../infrastructure/database/models/UserModel";
 
-interface Address {
+export interface Address {
     street: string;
     city: string;
     state: string;
@@ -11,5 +11,5 @@ interface Address {
 
 export interface Donor{
     donorId: ObjectId | IUser | string; // Reference to the user (donor)
-    address?: Address
+    address?: Address | string; // Address of the donor
 }
