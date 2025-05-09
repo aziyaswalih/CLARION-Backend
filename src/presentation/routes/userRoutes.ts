@@ -40,4 +40,5 @@ router.post("/verifyOtp", (req, res) => userController.verifyOtp(req, res));
 router.post("/google", (req, res,  NextFunction) => userController.User_Google_Auth(req, res, NextFunction))
 router.get('/refresh-token',(req,res)=> refreshTokenController(req,res))
 router.get("/transactions", (req, res) => getTransactions(req, res));
+router.get("/:id", (req, res) => userController.getUser(req, res));
 export default router;

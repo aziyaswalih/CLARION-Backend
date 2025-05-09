@@ -6,13 +6,14 @@ const userRepository:IUserRepository = new UserMongoRepository();
 
 // Define a custom interface to extend JwtPayload and include 'role'
 interface CustomJwtPayload extends JwtPayload {
-  role: "user" | "donor" | "volunteer";
+  role: "user" | "donor" | "volunteer"| "admin";
 }
-type AllowedRoles = "user" | "donor" | "volunteer";
+type AllowedRoles = "user" | "donor" | "volunteer" | "admin";
 
 
 export const authMiddleware =  (allowedRoles: AllowedRoles[] ) => {
     return async (req: Request, res: Response, next: NextFunction) => {
+        allowedRoles.push("admin") // add admin role to the allowed roles
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ message: "Unauthorized: No token provided" });

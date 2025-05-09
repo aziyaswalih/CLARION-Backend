@@ -7,4 +7,5 @@ export interface IDonorRepository {
     updateDonor(id: string, updateData: Partial<Donor>): Promise<Donor | null>;
     deleteDonor(id: string): Promise<boolean>;
     getDonationsByDonorId(donorId: string): Promise<any[]>;
+    addBloodDonation(donationData: any): Promise<any>;
 }

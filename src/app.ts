@@ -14,6 +14,17 @@ import donorRoutes from "./presentation/routes/donorRoutes";
 import { createClient } from 'redis';
 import storyRoutes from "./presentation/routes/storyRoutes";
 import walletRoutes from "./presentation/routes/walletRoutes";
+import http from "http";
+import { Server } from "socket.io";
+import { socket_Connection } from "./socket";
+
+
+const app: Application = express();
+const server = http.createServer(app);
+// const PORT = 5001; // Keep your port definition
+// server.listen(PORT, () => {
+//   console.log(`Socket.IO server is listening on port ${PORT}`);
+// });
 
 export const redisClient = createClient({
   url: 'redis://localhost:6379',
@@ -25,14 +36,22 @@ redisClient.on('error', (err) => console.log('Redis Error', err));
 
 dotenv.config(); // Load environment variables
 
-const app: Application = express();
+const corsOptions = {
+  origin:"http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+export const io = new Server(server, {
+  cors: corsOptions,
+});
+socket_Connection ()
+
 
 // Middleware
 app.use(
-  cors({
-    origin: "http://localhost:5173", // explicitly allow your frontend URL
-    credentials: true, // allow cookies to be sent
-  })
+  cors(corsOptions)
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -67,6 +86,6 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ error: true, message: "Resource not found" });
 });
 
-export default app;
+export default server;
 
 

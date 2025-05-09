@@ -1,6 +1,4 @@
-// src/presentation/controllers/BeneficiaryController.ts
-
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import {
     SubmitBeneficiaryDetailsUseCase,
     GetBeneficiaryUseCase,
@@ -12,6 +10,9 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { UserUseCases } from '../../application/usecases/user/userUseCase';
 import { UserMongoRepository } from '../../infrastructure/repositories/user/UserMongoRepository';
 import { HttpStatus } from '../../constants/httpStatus';
+import { CustomError } from '../../utils/errors/customError';
+import { AppError } from '../../utils/errors/errorEnum';
+import { UserEntity } from '../../domain/entities/UserEntity';
 interface CustomJwtPayload extends JwtPayload {
     id: string; // Add the expected properties
   }
@@ -143,4 +144,29 @@ export class BeneficiaryUserController {
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete beneficiary', error: error.message });
         }
     }
+
+    async User_get_volunteerdetailsControl(
+        req: Request,
+        res: Response,
+        next: NextFunction
+      ) {
+        try {
+          const { id } = req.params;
+          if (!id) return next(new CustomError("id missing",401,AppError.ValidationError));
+          const user = await this.execute(id)
+          const { password: _, ...without } = user;
+          return res.status(200).json({ message: "success", user: without });
+        } catch (error) {
+          return next(error)
+    
+        }
+      }
+
+      async execute(id:string):Promise<UserEntity>{
+        const volunteer=await userUseCases.getUser(id)
+        if(!volunteer) throw new Error("No employee")
+        return volunteer
+
+    }
+    
 }

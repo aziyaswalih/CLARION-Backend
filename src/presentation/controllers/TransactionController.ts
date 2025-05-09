@@ -1,4 +1,3 @@
-// src/controllers/transaction.controller.ts
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { getUserTransactions } from '../../infrastructure/services/TransactionService';

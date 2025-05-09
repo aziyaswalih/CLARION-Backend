@@ -6,12 +6,15 @@ import { UserUseCases } from "../../application/usecases/user/userUseCase";
 import { UserMongoRepository } from "../../infrastructure/repositories/user/UserMongoRepository";
 import { ObjectId } from "mongoose";
 import { HttpStatus } from "../../constants/httpStatus";
+import { StoryUseCase } from "../../application/usecases/story/StoryUseCase";
 
 const donorRepo = new DonorRepository();
 const donorUseCases = new DonorUseCases(donorRepo);
 
 const userRepo = new UserMongoRepository();
 const userUseCases = new UserUseCases(userRepo);
+
+const storyUseCases = new StoryUseCase();
 
 interface CustomJwtPayload extends JwtPayload {
     id: string;
@@ -89,14 +92,15 @@ export class DonorController {
                 
                 profilePicUrl = `/uploads/${req.file.filename}`;
             }
-
-            const updatedData = {
+            console.log(profilePicUrl,'profile pic url');
+            
+            let updatedData = {
                 ...req.body
                 // ,
                 // ...(profilePicUrl && { profilePic: profilePicUrl })
             };
             if(profilePicUrl){
-                updatedData.donorId = {...updatedData.donorId,profilePic:profilePicUrl}
+                updatedData = {...updatedData,profilePic:profilePicUrl}
             }
             console.log(updatedData,'updated data');
             
@@ -135,7 +139,7 @@ export class DonorController {
             if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Access token is missing" });
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
-            const donations = await donorUseCases.getDonationsByDonorId(decoded.id);
+            const donations = (await donorUseCases.getDonationsByDonorId(decoded.id));
 
             if (!donations) {
                 return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "No donations found" });
@@ -147,4 +151,87 @@ export class DonorController {
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch donations", error: error.message });
         }
     }
+
+    // static async addBloodDonation(req: Request, res: Response) {
+    //     try {
+    //         const token = req.headers.authorization?.split(" ")[1];
+    //         if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Access token is missing" });
+    //         const causeId = req.body.causeId;
+    //         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
+    //         const bloodDonation = await donorUseCases.addBloodDonation({ storyId:causeId, donorId: decoded.id });
+    //         const updateStory = await storyUseCases.updateStatus({id:causeId,status:'completed'});
+    //         if (!bloodDonation) {
+    //             return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "Failed to add blood donation" });
+    //         }
+    //         if (!updateStory) {
+    //             return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "Failed to update story status" }); 
+    //         }
+    //         res.status(201).json({ success: true, message: "Blood donation added successfully", data: bloodDonation });
+    //         return;
+    //     } catch (error: any) {
+    //         console.error("Error adding blood donation:", error);
+    //         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to add blood donation", error: error.message });
+    //     }
+    // }
+    static async addBloodDonation(req: Request, res: Response) {
+        try {
+          const authHeader = req.headers.authorization;
+          if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res
+              .status(HttpStatus.UNAUTHORIZED)
+              .json({ message: "Access token is missing or invalid" });
+          }
+      
+          const token = authHeader.split(" ")[1];
+          const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
+      
+          const { causeId } = req.body;
+          if (!causeId) {
+            return res
+              .status(HttpStatus.BAD_REQUEST)
+              .json({ success: false, message: "Cause ID is required" });
+          }
+      
+          const bloodDonation = await donorUseCases.addBloodDonation({
+            storyId: causeId,
+            donorId: decoded.id,
+          });
+
+          console.log(bloodDonation,'blood donation');
+          
+      
+          if (!bloodDonation) {
+            return res
+              .status(HttpStatus.NOT_FOUND)
+              .json({ success: false, message: "Failed to add blood donation" });
+          }
+      
+          const updateStory = await storyUseCases.updateStatus({
+            id: causeId,
+            status: "completed",
+          });
+
+          console.log(updateStory,'update story');
+      
+          if (!updateStory) {
+            return res
+              .status(HttpStatus.NOT_FOUND)
+              .json({ success: false, message: "Failed to update story status" });
+          }
+      
+          return res.status(HttpStatus.CREATED).json({
+            success: true,
+            message: "Blood donation added successfully",
+            data: bloodDonation,
+          });
+        } catch (error: any) {
+          console.error("Error adding blood donation:", error);
+          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Failed to add blood donation",
+            error: error.message,
+          });
+        }
+      }
+      
 }

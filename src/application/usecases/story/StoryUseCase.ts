@@ -60,7 +60,7 @@ export class StoryUseCase {
 
   public getAll = async (_req: Request, res: Response) => {
     try {
-      const stories = await Story.find().populate("beneficiary reviewedBy");
+      const stories = await Story.find().populate("beneficiary reviewedBy").sort({ createdAt: -1 });
       if (!stories.length) return res.status(404).json({ message: "No stories available" });
 
       res.status(200).json(stories);
@@ -68,6 +68,33 @@ export class StoryUseCase {
       res.status(500).json({ message: error.message });
     }
   };
+
+  public updateStatus = async (data: {
+    id: string;
+    status: "pending" | "processing" | "approved" | "completed" | "rejected";
+  }) => {
+    try {
+      const { id, status } = data;
+  
+      const story = await Story.findById(id).populate("beneficiary reviewedBy");
+  
+      if (!story) {
+        throw new Error("Story not found.");
+      }
+  
+      story.status = status;
+      await story.save();
+  
+      return story;
+    } catch (error: any) {
+      console.error("Error updating story status:", error.message);
+      throw new Error(error.message || "Failed to update story status.");
+    }
+  };
+  
+  
+
+    
 
   public update = async (req: Request, res: Response) => {
     try {

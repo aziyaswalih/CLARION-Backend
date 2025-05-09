@@ -18,8 +18,8 @@ export interface DonationDocument extends  Document {
 const DonationSchema = new Schema<DonationDocument>({
     donorId: { type: String, default: 'Anonymous' },
     storyId: { type: String, ref:StoryModel, required: true },
-    amount: { type: Number, required: true },
-    date: { type: Date, required: true },
+    amount: { type: Number, required: true ,default: 0},
+    date: { type: Date, default: Date.now },
 });
 
 const DonationModel = model<DonationDocument>('Donation', DonationSchema);

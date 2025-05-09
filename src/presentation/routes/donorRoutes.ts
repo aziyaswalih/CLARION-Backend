@@ -22,4 +22,5 @@ router.delete("/:id", DonorController.deleteDonor);
 // Get all donations made by a donor
 router.get("/donations", DonorController.getDonationsByDonorId);
 
+router.post("/blood", DonorController.addBloodDonation);
 export default router;

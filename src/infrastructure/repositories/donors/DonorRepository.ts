@@ -27,9 +27,14 @@ export class DonorRepository implements IDonorRepository {
     }
 
     async getDonationsByDonorId(donorId: string): Promise<any[]> {
-        const donations = await DonationModel.find({ donorId: donorId }).populate('storyId');
+        const donations = await DonationModel.find({ donorId: donorId }).populate('storyId').sort({ date: -1 });
         if (!donations) return [];  
         return donations
 
+    }
+
+    async addBloodDonation(donationData: any): Promise<any> {
+        const newDonation = new DonationModel(donationData);
+        return await newDonation.save();
     }
 }

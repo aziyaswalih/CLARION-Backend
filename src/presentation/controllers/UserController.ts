@@ -198,7 +198,22 @@ async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async getUser(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(HttpStatus.BAD_REQUEST).json({ message: "User ID is required" });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token is required" });
+    const user = await findUserById(id);
+    if (!user) return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
 
+    res.status(HttpStatus.OK).json({ message: "User retrieved successfully", user });
+  }
+  catch (error: any) {
+    console.log("error -> usercontrol -> getUser", error.message);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error retrieving user" });
+  }
+}
 
 //   async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
 //     try {
@@ -241,6 +256,7 @@ interface CustomJwtPayload extends jwt.JwtPayload {
 import { UserMongoRepository } from "../../infrastructure/repositories/user/UserMongoRepository";
 import { IUserRepository } from "../../domain/interfaces/IUserRepository";
 import { HttpStatus } from "../../constants/httpStatus";
+import { findUserById } from "../../infrastructure/services/UserService";
 const userRepository:IUserRepository = new UserMongoRepository();
 
 export const refreshTokenController = async (req: Request, res: Response) => {

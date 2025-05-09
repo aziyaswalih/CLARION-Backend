@@ -1,5 +1,3 @@
-// src/domain/interfaces/repositories/BeneficiaryRepository.ts
-
 import { Beneficiary } from "../entities/BeneficiaryEntity";
 
 export interface BeneficiaryRepository {

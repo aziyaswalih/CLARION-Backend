@@ -39,5 +39,6 @@ router.put("/donors/unblock/:id",authMiddleware, donorController.unblockDonor);
 router.get("/donors/edit/:id",authMiddleware, donorController.getDonor);
 router.put("/donors/update/:id",authMiddleware, donorController.editDonor);
 
+router.get("/reports",authMiddleware, (req, res) => adminController.getDonationReport(req,res));
 
 export default router;

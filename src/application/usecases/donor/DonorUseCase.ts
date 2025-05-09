@@ -29,4 +29,8 @@ export class DonorUseCases {
     async getDonationsByDonorId(donorId: string): Promise<any[]> {
         return await this.donorRepo.getDonationsByDonorId(donorId);
     }
+
+    async addBloodDonation(donationData: any): Promise<any> {
+        return await this.donorRepo.addBloodDonation(donationData);
+    }
 }
