@@ -12,9 +12,9 @@ export class SubmitBeneficiaryDetailsUseCase {
 
     async execute(beneficiaryData: Beneficiary): Promise<Beneficiary> {
         // 1. Validate input data (Business rules, Domain logic)
-        if (!beneficiaryData.details || !beneficiaryData.condition || !beneficiaryData.gender) {
-            throw new Error("Beneficiary details, condition, and gender are required."); // Example validation
-        }
+        // if (!beneficiaryData.details || !beneficiaryData.condition || !beneficiaryData.gender) {
+        //     throw new Error("Beneficiary details, condition, and gender are required."); // Example validation
+        // }
         
         // 2. Business logic (e.g., enrich data, perform calculations, etc. - in this case, simple creation)
 

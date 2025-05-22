@@ -51,7 +51,7 @@ export class BeneficiaryUserController {
         }
         
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
-        console.log(decodedToken);
+        console.log(decodedToken, beneficiaryDetails, 'decoded token beneficiary details');
         const user = decodedToken.id
         
             const newBeneficiary = await this.submitBeneficiaryDetailsUseCase.execute({...beneficiaryDetails,user:Object(user)});

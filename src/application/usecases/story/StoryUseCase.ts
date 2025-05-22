@@ -4,6 +4,7 @@ import { HttpStatus } from "../../../constants/httpStatus";
 import { GetBeneficiaryUseCase } from "../beneficiary/BeneficiaryUseCase";
 import { BeneficiaryMongoRepository } from "../../../infrastructure/repositories/beneficiary/BeneficiaryMongoRepository";
 import { Request, Response } from "express";
+import { io } from '../../../app';
 
 interface CustomJwtPayload extends JwtPayload {
   id: string;
@@ -38,6 +39,8 @@ export class StoryUseCase {
 
       const story = new Story({ ...req.body, beneficiary: userId, images, documents });
       await story.save();
+      io.emit('new_story_added')
+
       res.status(201).json(story);
     } catch (error: any) {
       res.status(error.status || 500).json({ message: error.message });

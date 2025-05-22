@@ -70,24 +70,6 @@ export class VolunteerController {
         }
     }
 
-    // static async updateVolunteer(req: Request, res: Response) {
-    //     try {
-    //         const token = req.headers.authorization?.split(" ")[1];
-    //         if(!token) return res.status(HttpStatus.UNAUTHORIZED).json({message:"Access token is missing" });
-
-    //         const decoded = jwt.verify(token,process.env.JWT_SECRET as string) as CustomJwtPayload;
-    //         const updatedVolunteer = await volunteerUseCases.updateVolunteer(decoded.id, req.body);
-    //         const updatedUser = await userUseCases.updateUser(decoded.id, req.body);
-    //         if (!updatedVolunteer || !updatedUser) {
-    //             return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "Volunteer not found" });
-    //         }
-
-    //         res.status(HttpStatus.OK).json({ success: true, message: "Profile updated successfully", data:{ updatedVolunteer,updatedUser} });
-    //     } catch (error:any) {
-    //         console.error("Error updating volunteer:", error);
-    //         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to update volunteer profile", error: error.message });
-    //     }
-    // }
 
     static async updateVolunteer(req: Request, res: Response) {
         try {

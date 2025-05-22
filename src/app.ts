@@ -17,6 +17,7 @@ import walletRoutes from "./presentation/routes/walletRoutes";
 import http from "http";
 import { Server } from "socket.io";
 import { socket_Connection } from "./socket";
+import concernRoutes from "./presentation/routes/concernRoutes";
 
 
 const app: Application = express();
@@ -47,6 +48,9 @@ export const io = new Server(server, {
   cors: corsOptions,
 });
 socket_Connection ()
+io.on('connection', (socket) => {
+  console.log('a user connected', socket.id);
+});
 
 
 // Middleware
@@ -70,6 +74,7 @@ app.use("/api/volunteers",authMiddleware(['volunteer']), volunteerRoutes);
 app.use("/api/donor",authMiddleware(['donor']), donorRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/wallet", authMiddleware(['donor','user','volunteer']), walletRoutes);
+app.use("/api/concerns", authMiddleware(['user','volunteer','donor']), concernRoutes);
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "OK", message: "Server is running smoothly" });

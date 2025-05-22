@@ -6,17 +6,19 @@ import { ObjectId } from "mongoose";
 export class BeneficiaryMongoRepository implements BeneficiaryRepository {
     // Create a new beneficiary
     async create(beneficiary: Beneficiary): Promise<Beneficiary> {
+        console.log(beneficiary,'beneficiary mongo repository');
+        
         const beneficiaryData = await BeneficiaryModel.create({
             user: beneficiary.user,
-            details: beneficiary.details,
-            condition: beneficiary.condition,
+            // details: beneficiary.details,
+            // condition: beneficiary.condition,
             dateOfBirth: beneficiary.dateOfBirth,
             gender: beneficiary.gender,
             identificationType: beneficiary.identificationType,
             identificationNumber: beneficiary.identificationNumber,
             address: beneficiary.address,
             familyDetails: beneficiary.familyDetails,
-            uploadedFiles: beneficiary.uploadedFiles,
+            // uploadedFiles: beneficiary.uploadedFiles,
         });
         return this.toEntity(beneficiaryData);
     }
@@ -54,15 +56,15 @@ export class BeneficiaryMongoRepository implements BeneficiaryRepository {
         return {
             id: beneficiaryDoc._id.toString(), // Convert ObjectId to string
             user: beneficiaryDoc.user,
-            details: beneficiaryDoc.details,
-            condition: beneficiaryDoc.condition,
+            // details: beneficiaryDoc.details,
+            // condition: beneficiaryDoc.condition,
             dateOfBirth: beneficiaryDoc.dateOfBirth,
             gender: beneficiaryDoc.gender,
             identificationType: beneficiaryDoc.identificationType,
             identificationNumber: beneficiaryDoc.identificationNumber,
             address: beneficiaryDoc.address,
             familyDetails: beneficiaryDoc.familyDetails,
-            uploadedFiles: beneficiaryDoc.uploadedFiles,
+            // uploadedFiles: beneficiaryDoc.uploadedFiles,
             createdAt: beneficiaryDoc.createdAt,
             updatedAt: beneficiaryDoc.updatedAt,
         };
