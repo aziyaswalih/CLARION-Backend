@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.reviewStory = exports.rejectStory = exports.updateStory = exports.getStories = exports.getBeneficiaryStories = exports.submitStory = void 0;
+const StoryUseCase_1 = require("../../application/usecases/story/StoryUseCase");
+const storyUseCase = new StoryUseCase_1.StoryUseCase();
+exports.submitStory = storyUseCase.submit;
+exports.getBeneficiaryStories = storyUseCase.getByBeneficiary;
+exports.getStories = storyUseCase.getAll;
+exports.updateStory = storyUseCase.update;
+exports.rejectStory = storyUseCase.reject;
+exports.reviewStory = storyUseCase.review;

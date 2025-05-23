@@ -23,7 +23,7 @@ const app: Application = express();
 const server = http.createServer(app);
 
 export const redisClient = createClient({
-  url: process.env.REDIS_URL as string | "redis://localhost:6379",
+  url: process.env.REDIS_URL,
 });
 redisClient.connect();
 redisClient.on("ready", () => console.log("Redis Connected!"));
@@ -32,7 +32,7 @@ redisClient.on("error", (err) => console.log("Redis Error", err));
 dotenv.config(); // Load environment variables
 
 const corsOptions = {
-  origin: process.env.ORIGIN as string | "http://localhost:5173",
+  origin: process.env.ORIGIN ,
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
