@@ -86,9 +86,6 @@ export const socket_Connection = () => {
           await MessageModel.findByIdAndDelete(messageToDelete._id);
           console.log(`✅ Message ID ${messageToDelete._id} deleted from DB.`);
 
-          // Broadcast the deletion event to all participants in the conversation
-          // Find the socket IDs of all participants in this conversation
-          // 'participants' array should contain the senderId and receiverId of the original message
           const participantSocketIds = participants
             .map((id) => activeUsers.get(id)) // Get socket ID for each participant ID
             .filter(
@@ -105,9 +102,6 @@ export const socket_Connection = () => {
           participantSocketIds.forEach((sid) => {
             io.to(sid).emit("messageDeleted ", { messageId });
           });
-
-          // Optional: Emit a success confirmation back to the sender if needed (beyond optimistic)
-          // socket.emit('deleteConfirmation', { messageId });
         } catch (error) {
           console.error(`Error deleting message on ${messageId}:`, error);
           // Optional: Emit an error back to the sender
@@ -239,8 +233,6 @@ export const socket_Connection = () => {
             `Caller ${senderId} is offline. Cannot notify about missed call for room ${roomId}.`
           );
         }
-        // No specific action is usually taken on the socket that emitted 'call_missed' (receiver's socket)
-        // as its client-side has already handled the UI (e.g., hiding incoming call popup).
       }
     );
     // --- END OF NEW HANDLER ---

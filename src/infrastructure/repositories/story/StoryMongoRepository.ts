@@ -9,7 +9,9 @@ export class StoryMongoRepository implements IStoryRepository {
   }
 
   async findByBeneficiary(id: string): Promise<IStory[]> {
-    return StoryModel.find({ beneficiary: id }).populate("beneficiary reviewedBy");
+    return StoryModel.find({ beneficiary: id }).populate(
+      "beneficiary reviewedBy"
+    );
   }
 
   async findAll(): Promise<IStory[]> {
@@ -21,7 +23,9 @@ export class StoryMongoRepository implements IStoryRepository {
   }
 
   async updateStory(id: string, data: Partial<IStory>): Promise<IStory | null> {
-    return StoryModel.findByIdAndUpdate(id, data, { new: true }).populate("beneficiary reviewedBy");
+    return StoryModel.findByIdAndUpdate(id, data, { new: true }).populate(
+      "beneficiary reviewedBy"
+    );
   }
 
   async reviewStory(id: string, reviewerId: string): Promise<IStory | null> {

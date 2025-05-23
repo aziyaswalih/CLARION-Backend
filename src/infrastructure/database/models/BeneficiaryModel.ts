@@ -13,16 +13,13 @@ export interface IBeneficiary extends Document {
   };
   dateOfBirth: Date;
   gender: "Male" | "Female" | "Other";
-  identificationType: string; // Changed from nested identification.type to top-level field
-  identificationNumber: string; // Changed from nested identification.number to top-level field
+  identificationType: string;
+  identificationNumber: string;
   familyDetails: {
     membersCount: number;
     incomeLevel: string;
   };
-  // details: string; // New field: Beneficiary's background and needs
-  // condition: string; // New field: Beneficiary's current condition
-  // uploadedFiles: string[]; // Changed from uploadedDocuments to uploadedFiles to match create function
-  // verification: 'pending' | 'accepted' | 'rejected'
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,21 +38,24 @@ const BeneficiarySchema: Schema = new Schema(
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
     identificationType: { type: String, required: true, trim: true }, // Changed from nested identification.type
-    identificationNumber: { type: String, required: true, trim: true, unique: true }, // Changed from nested identification.number
+    identificationNumber: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+    }, // Changed from nested identification.number
     familyDetails: {
       membersCount: { type: Number, required: true },
       incomeLevel: { type: String, required: true, trim: true },
     },
-    // details: { type: String, required: true, trim: true },
-    // condition: { type: String, required: true, trim: true },
-    // verification:{ type: String, enum:['pending' , 'accepted' , 'rejected'],default:'pending'},
-
-    // uploadedFiles: { type: [String], default: [] }, // Changed from uploadedDocuments to uploadedFiles
   },
   {
-    timestamps: true, // Automatically manage createdAt and updatedAt
+    timestamps: true,
   }
 );
 
 // Create and export the model
-export const BeneficiaryModel = mongoose.model<IBeneficiary>("Beneficiary", BeneficiarySchema);
+export const BeneficiaryModel = mongoose.model<IBeneficiary>(
+  "Beneficiary",
+  BeneficiarySchema
+);

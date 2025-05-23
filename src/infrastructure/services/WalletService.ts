@@ -1,6 +1,5 @@
-// src/services/wallet.service.ts
-import { IWallet, Wallet } from '../database/models/WalletModel';
-import { Transaction } from '../database/models/TransactionModel';
+import { IWallet, Wallet } from "../database/models/WalletModel";
+import { Transaction } from "../database/models/TransactionModel";
 
 export const getWalletByUserId = async (userId: string): Promise<IWallet> => {
   const wallet = await Wallet.findOne({ userId });
@@ -10,7 +9,11 @@ export const getWalletByUserId = async (userId: string): Promise<IWallet> => {
   return wallet;
 };
 
-export const addToWallet = async (userId: string, amount: number, purpose: 'refund' | 'donating') => {
+export const addToWallet = async (
+  userId: string,
+  amount: number,
+  purpose: "refund" | "donating"
+) => {
   const wallet = await getWalletByUserId(userId);
   wallet.balance += amount;
   await wallet.save();
@@ -18,24 +21,24 @@ export const addToWallet = async (userId: string, amount: number, purpose: 'refu
   await Transaction.create({
     userId,
     amount,
-    mode: 'wallet',
+    mode: "wallet",
     walletUsed: amount,
     purpose,
-    status: 'success',
+    status: "success",
   });
- 
+
   return wallet;
 };
 
 export const deductFromWallet = async (
   userId: string,
   amount: number,
-  purpose: 'donating'
+  purpose: "donating"
 ): Promise<IWallet | null> => {
   const wallet = await getWalletByUserId(userId);
 
   if (wallet.balance < amount) {
-    throw new Error('Insufficient balance in wallet');
+    throw new Error("Insufficient balance in wallet");
   }
 
   wallet.balance -= amount;
@@ -44,10 +47,10 @@ export const deductFromWallet = async (
   await Transaction.create({
     userId,
     amount,
-    mode: 'wallet',
+    mode: "wallet",
     walletUsed: amount,
     purpose,
-    status: 'success',
+    status: "success",
   });
 
   return wallet;

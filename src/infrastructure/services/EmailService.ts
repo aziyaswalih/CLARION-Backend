@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
 export class EmailService {
@@ -7,8 +7,8 @@ export class EmailService {
 
   constructor() {
     // Ensure that environment variables are available
-    console.log(process.env.EMAIL_USER ,process.env.EMAIL_PASS);
-    
+    console.log(process.env.EMAIL_USER, process.env.EMAIL_PASS);
+
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       throw new Error("Missing email credentials in environment variables.");
     }

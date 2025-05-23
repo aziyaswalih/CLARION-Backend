@@ -17,7 +17,7 @@ export interface IStory extends Document {
   amount?: number; // Required if requestType is "financial"
   raisedAmount?: number; // Amount raised so far (optional)
   bloodGroup?: string; // Required if requestType is "blood" (or optionally for organ)
-  organType?: string;  // Required if requestType is "organ"
+  organType?: string; // Required if requestType is "organ"
   documents?: string[];
   images?: string[];
   status: "pending" | "processing" | "approved" | "completed" | "rejected";
@@ -29,8 +29,16 @@ export interface IStory extends Document {
 
 const StorySchema = new mongoose.Schema(
   {
-    beneficiary: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    requestType: { type: String, enum: Object.values(RequestType), required: true },
+    beneficiary: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    requestType: {
+      type: String,
+      enum: Object.values(RequestType),
+      required: true,
+    },
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
     amount: { type: Number },
@@ -56,20 +64,30 @@ const StorySchema = new mongoose.Schema(
 StorySchema.pre<IStory>("save", function (next) {
   if (this.requestType === RequestType.FINANCIAL) {
     if (this.amount === undefined || this.amount <= 0) {
-      return next(new Error("Amount is required for financial requests and must be greater than 0"));
+      return next(
+        new Error(
+          "Amount is required for financial requests and must be greater than 0"
+        )
+      );
     }
   }
   if (this.requestType === RequestType.BLOOD) {
     if (!this.bloodGroup) {
-      return next(new Error("Blood group is required for blood donation requests"));
+      return next(
+        new Error("Blood group is required for blood donation requests")
+      );
     }
   }
   if (this.requestType === RequestType.ORGAN) {
     if (!this.organType) {
-      return next(new Error("Organ type is required for organ donation requests"));
+      return next(
+        new Error("Organ type is required for organ donation requests")
+      );
     }
     if (!this.bloodGroup) {
-      return next(new Error("Blood group is required for organ donation requests"));
+      return next(
+        new Error("Blood group is required for organ donation requests")
+      );
     }
   }
   next();
@@ -88,6 +106,5 @@ StorySchema.pre<IStory>("save", function (next) {
   }
   next();
 });
-
 
 export default mongoose.model<IStory>("Story", StorySchema);

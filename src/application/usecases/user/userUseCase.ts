@@ -2,15 +2,18 @@ import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
 import { UserEntity } from "../../../domain/entities/UserEntity";
 
 export class UserUseCases {
-    constructor(private userRepo: IUserRepository) {}
+  constructor(private userRepo: IUserRepository) {}
 
-    async updateUser(id: string, updateData: Partial<UserEntity>): Promise<UserEntity | null> {
-        console.log("Update Data from userusecase :", updateData,id);
-        
-        return await this.userRepo.update(id, updateData)
-    }
+  async updateUser(
+    id: string,
+    updateData: Partial<UserEntity>
+  ): Promise<UserEntity | null> {
+    console.log("Update Data from userusecase :", updateData, id);
 
-    async getUser(id: string): Promise<UserEntity | null> {
-        return await this.userRepo.findById(id)
-    }
+    return await this.userRepo.update(id, updateData);
+  }
+
+  async getUser(id: string): Promise<UserEntity | null> {
+    return await this.userRepo.findById(id);
+  }
 }

@@ -42,4 +42,7 @@ const BloodRequestSchema: Schema<IBloodRequest> = new Schema(
   }
 );
 
-export default mongoose.model<IBloodRequest>("BloodRequest", BloodRequestSchema);
+export default mongoose.model<IBloodRequest>(
+  "BloodRequest",
+  BloodRequestSchema
+);

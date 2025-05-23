@@ -13,7 +13,11 @@ export const createDonation = async (amount: number, currency: string) => {
   return await razorpay.orders.create(options);
 };
 
-export const verifyPayment = (orderId: string, paymentId: string, signature: string): boolean => {
+export const verifyPayment = (
+  orderId: string,
+  paymentId: string,
+  signature: string
+): boolean => {
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
     .update(orderId + "|" + paymentId)
@@ -22,7 +26,15 @@ export const verifyPayment = (orderId: string, paymentId: string, signature: str
   return generatedSignature === signature;
 };
 
-export const newDonation = async ({ storyId, amount, donorId }: { storyId: string, amount: number, donorId: string }) => {
+export const newDonation = async ({
+  storyId,
+  amount,
+  donorId,
+}: {
+  storyId: string;
+  amount: number;
+  donorId: string;
+}) => {
   const donation = new DonationModel({
     donorId,
     storyId,

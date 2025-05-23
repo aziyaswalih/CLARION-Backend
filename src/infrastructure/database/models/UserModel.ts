@@ -20,8 +20,12 @@ const UserSchema: Schema<IUser> = new Schema(
     phone: { type: String, required: true },
     profilePic: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
-    role: { type: String, enum: ["admin", "user", "donor", "volunteer"], default: "user" },
-    is_verified: {type: Boolean,default: false}
+    role: {
+      type: String,
+      enum: ["admin", "user", "donor", "volunteer"],
+      default: "user",
+    },
+    is_verified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -1,6 +1,6 @@
 import express from "express";
 import { DonorController } from "../controllers/DonorUserController";
-import upload from '../../middlewares/multer';
+import upload from "../../middlewares/multer";
 
 const router = express.Router();
 
@@ -14,7 +14,11 @@ router.get("/", DonorController.getDonors);
 router.get("/profile", DonorController.getDonorById);
 
 // Update donor profile with profilePic upload
-router.put("/profile", upload.single('profilePic'), DonorController.updateDonor);
+router.put(
+  "/profile",
+  upload.single("profilePic"),
+  DonorController.updateDonor
+);
 
 // Delete donor by ID
 router.delete("/:id", DonorController.deleteDonor);

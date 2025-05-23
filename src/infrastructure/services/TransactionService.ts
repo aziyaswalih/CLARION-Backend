@@ -1,4 +1,3 @@
-// src/services/transaction.service.ts
 import mongoose from 'mongoose';
 import { ITransaction, Transaction } from '../database/models/TransactionModel';
 

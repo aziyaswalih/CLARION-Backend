@@ -6,11 +6,17 @@ interface CustomJwtPayload extends JwtPayload {
   role: string;
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    res.status(401).json({ success: false, message: "Access token is missing" });
+    res
+      .status(401)
+      .json({ success: false, message: "Access token is missing" });
     return;
   }
 
@@ -18,19 +24,24 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
     console.log("Reached try block in auth middleware");
 
     // Verify the token and assert its type
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as CustomJwtPayload;
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as CustomJwtPayload;
 
     // Attach user info to the request object
     (req as Request & { user?: CustomJwtPayload }).user = decoded;
 
     console.log(decoded, "Decoded token");
 
-    if (decoded.role==='admin') {
+    if (decoded.role === "admin") {
       next();
     } else {
       res.status(403).json({ success: false, message: "Unauthorized access" });
     }
   } catch (error) {
-    res.status(403).json({ success: false, message: "Invalid or expired token" });
+    res
+      .status(403)
+      .json({ success: false, message: "Invalid or expired token" });
   }
 };

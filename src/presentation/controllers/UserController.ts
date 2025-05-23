@@ -25,7 +25,9 @@ export class UserController {
 
       const { name, email, password, phone, role } = req.body;
       if (!name || !email || !password || !phone || !role)
-        return res.status(HttpStatus.UNAUTHORIZED).json({ error: "Missing field" });
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ error: "Missing field" });
       const user = await this.registerUseCase.execute(req.body);
       console.log(user.password);
 
@@ -47,7 +49,9 @@ export class UserController {
         token: otp[1],
       });
     } catch (error: any) {
-      res.status(HttpStatus.BAD_REQUEST).json({ success: false, message: error.message });
+      res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ success: false, message: error.message });
       console.log(error);
     }
   }
@@ -59,31 +63,43 @@ export class UserController {
 
       // Execute login use case
       const result = await this.loginUseCase.execute(email, password);
-      if(!result){
-        return res.status(HttpStatus.FORBIDDEN).json({success: false,message: 'User blocked'})
+      if (!result) {
+        return res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ success: false, message: "User blocked" });
       }
       console.log(result.user);
       res.cookie("refreshToken", result.refresh_token, {
         httpOnly: true,
         sameSite: "strict",
         path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
       res
         .status(HttpStatus.OK)
         .json({ success: true, token: result.token, user: result.user });
     } catch (error: any) {
-      res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: error.message });
+      res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ success: false, message: error.message });
     }
   }
 
   // Logout User
   async logout(req: Request, res: Response) {
     try {
-      res.clearCookie("refreshToken", { httpOnly: true, sameSite: "strict", path: "/" });
-      res.status(HttpStatus.OK).json({ success: true, message: "Logged out successfully" });
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+      });
+      res
+        .status(HttpStatus.OK)
+        .json({ success: true, message: "Logged out successfully" });
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message });
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ success: false, message: error.message });
     }
   }
 
@@ -95,12 +111,10 @@ export class UserController {
         .status(HttpStatus.OK)
         .json({ success: true, message: "Password reset successfully" });
     } catch (error: any) {
-      res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({
-          success: false,
-          message: error.message || "Error resetting password",
-        });
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message: error.message || "Error resetting password",
+      });
     }
   }
 
@@ -130,7 +144,9 @@ export class UserController {
         otpToken: otp, // For debugging purposes; remove in production
       });
     } catch (error: any) {
-      res.status(HttpStatus.BAD_REQUEST).json({ success: false, message: error.message });
+      res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ success: false, message: error.message });
     }
   }
 
@@ -162,90 +178,110 @@ export class UserController {
   }
 
   // Google Auth Login
-async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
-  try {
-    console.log("Google Signin");
+  async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log("Google Signin");
 
-    const { credential } = req.body;
-    console.log(credential);
+      const { credential } = req.body;
+      console.log(credential);
 
-    const user = await this.AuthService.execute(credential);
-    const { password, ...without } = user;
+      const user = await this.AuthService.execute(credential);
+      const { password, ...without } = user;
 
-    // Generate tokens (make sure you have a refresh token strategy here)
-    const access_token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "1D" });
-        // refresh token no implemented
-    const refresh_token = jwt.sign({ id: user.id, role: user.role,name:user.name }, process.env.JWT_SECRET!, { expiresIn: "7D" });
-    
-    // Set refresh token in httpOnly cookie
-    res.cookie("refreshToken", refresh_token, {
-      httpOnly: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+      // Generate tokens (make sure you have a refresh token strategy here)
+      const access_token = jwt.sign(
+        { id: user.id, role: user.role, name: user.name },
+        process.env.JWT_SECRET!,
+        { expiresIn: "1D" }
+      );
+      // refresh token no implemented
+      const refresh_token = jwt.sign(
+        { id: user.id, role: user.role, name: user.name },
+        process.env.JWT_SECRET!,
+        { expiresIn: "7D" }
+      );
 
-    // Send access token and user data in response
-    res.status(HttpStatus.OK).json({
-      success: true,
-      message: "Login success",
-      token: access_token,
-      user: without
-    });
-  } catch (error: any) {
-    console.log("error -> usercontrol -> googleSignin", error.message);
-    next(error);
+      // Set refresh token in httpOnly cookie
+      res.cookie("refreshToken", refresh_token, {
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      // Send access token and user data in response
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: "Login success",
+        token: access_token,
+        user: without,
+      });
+    } catch (error: any) {
+      console.log("error -> usercontrol -> googleSignin", error.message);
+      next(error);
+    }
   }
-}
 
-async getUser(req: Request, res: Response) {
-  try {
-    const { id } = req.params;
-    if (!id) return res.status(HttpStatus.BAD_REQUEST).json({ message: "User ID is required" });
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token is required" });
-    const user = await findUserById(id);
-    if (!user) return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
+  async getUser(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id)
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: "User ID is required" });
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token)
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ message: "Token is required" });
+      const user = await findUserById(id);
+      if (!user)
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: "User not found" });
 
-    res.status(HttpStatus.OK).json({ message: "User retrieved successfully", user });
+      res
+        .status(HttpStatus.OK)
+        .json({ message: "User retrieved successfully", user });
+    } catch (error: any) {
+      console.log("error -> usercontrol -> getUser", error.message);
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Error retrieving user" });
+    }
   }
-  catch (error: any) {
-    console.log("error -> usercontrol -> getUser", error.message);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error retrieving user" });
-  }
-}
 
-//   async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
-//     try {
-//       console.log("google Signin");
+  //   async User_Google_Auth(req: Request, res: Response, next: NextFunction) {
+  //     try {
+  //       console.log("google Signin");
 
-//       const { credential } = req.body;
-//       console.log(credential);
+  //       const { credential } = req.body;
+  //       console.log(credential);
 
-//       const user = await this.AuthService.execute(credential);
-//       // const refresh_token = GenerateRefreshToken(user.id, user.role);
-//       // const access_token = GenerateAccessToken(user.id, user.role);
+  //       const user = await this.AuthService.execute(credential);
+  //       // const refresh_token = GenerateRefreshToken(user.id, user.role);
+  //       // const access_token = GenerateAccessToken(user.id, user.role);
 
-//       const { password, ...without } = user;
+  //       const { password, ...without } = user;
 
-//       // console.log("tokenssss    " + access_token, refresh_token);
-//       const token = jwt.sign(
-//         { id: user.id, role: user.role, name: user.name },
-//         process.env.JWT_SECRET!,
-//         { expiresIn: "1h" }
-//       );
+  //       // console.log("tokenssss    " + access_token, refresh_token);
+  //       const token = jwt.sign(
+  //         { id: user.id, role: user.role, name: user.name },
+  //         process.env.JWT_SECRET!,
+  //         { expiresIn: "1h" }
+  //       );
 
-//       res
-//         // .cookie("user_refreshToken", refresh_token, {
-//         //   httpOnly: true,
-//         // })
-//         .status(HttpStatus.OK)
-//         .json({ message: "login success", user: without, token });
-//     } catch (error: any) {
-//       console.log("error -> usercontrol - > googleSignin", error.message);
-//       next(error);
-//     }
-//   }
+  //       res
+  //         // .cookie("user_refreshToken", refresh_token, {
+  //         //   httpOnly: true,
+  //         // })
+  //         .status(HttpStatus.OK)
+  //         .json({ message: "login success", user: without, token });
+  //     } catch (error: any) {
+  //       console.log("error -> usercontrol - > googleSignin", error.message);
+  //       next(error);
+  //     }
+  //   }
 }
 
 interface CustomJwtPayload extends jwt.JwtPayload {
@@ -257,30 +293,42 @@ import { UserMongoRepository } from "../../infrastructure/repositories/user/User
 import { IUserRepository } from "../../domain/interfaces/IUserRepository";
 import { HttpStatus } from "../../constants/httpStatus";
 import { findUserById } from "../../infrastructure/services/UserService";
-const userRepository:IUserRepository = new UserMongoRepository();
+const userRepository: IUserRepository = new UserMongoRepository();
 
 export const refreshTokenController = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken;
-  console.log(req.cookies,'cookies from refresh token route');
-  
+  console.log(req.cookies, "cookies from refresh token route");
+
   if (!token) {
-    return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Refresh token missing" });
+    return res
+      .status(HttpStatus.UNAUTHORIZED)
+      .json({ message: "Refresh token missing" });
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as CustomJwtPayload
-    console.log(payload,'payload from refresh token end point');
-    
-    const newAccessToken = jwt.sign({ id: payload.id, role: payload.role,name:payload.name }, process.env.JWT_SECRET!, { expiresIn: "1h" }) 
-    console.log('refresh token working');
-    const user = await userRepository.findById(payload.id)
-            if(user && !user?.isActive){
-              res.clearCookie("refreshToken", { httpOnly: true, sameSite: 'strict' });
-              return res.status(HttpStatus.FORBIDDEN).json({ message: "Forbidden: You are blocked" });
+    const payload = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    ) as CustomJwtPayload;
+    console.log(payload, "payload from refresh token end point");
 
-            }
+    const newAccessToken = jwt.sign(
+      { id: payload.id, role: payload.role, name: payload.name },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1h" }
+    );
+    console.log("refresh token working");
+    const user = await userRepository.findById(payload.id);
+    if (user && !user?.isActive) {
+      res.clearCookie("refreshToken", { httpOnly: true, sameSite: "strict" });
+      return res
+        .status(HttpStatus.FORBIDDEN)
+        .json({ message: "Forbidden: You are blocked" });
+    }
     return res.status(HttpStatus.OK).json({ token: newAccessToken });
   } catch (error) {
-    return res.status(HttpStatus.FORBIDDEN).json({ message: "Invalid refresh token" });
+    return res
+      .status(HttpStatus.FORBIDDEN)
+      .json({ message: "Invalid refresh token" });
   }
 };

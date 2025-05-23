@@ -1,4 +1,4 @@
-import { IStory } from "../../infrastructure/database/models/StoryModel"
+import { IStory } from "../../infrastructure/database/models/StoryModel";
 
 export interface IStoryRepository {
   createStory(data: Partial<IStory>): Promise<IStory>;

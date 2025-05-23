@@ -10,18 +10,18 @@ export interface IMessage extends Document {
   timestamp: Date;
   isRead: boolean;
   attachment?: {
-    type: string;   
+    type: string;
     url: string;
     name: string;
     size: number;
-}
-
+  };
 }
 
 const MessageSchema = new Schema<IMessage>({
   sender: {
-     type: String,
-     required: true },
+    type: String,
+    required: true,
+  },
   receiver: { type: String, required: true },
   message: { type: String, required: true },
   messageId: { type: String, required: false },

@@ -1,5 +1,9 @@
 import express from "express";
-import { createNewDonation, createDonationController, verifyPaymentController } from "../controllers/PaymentController";
+import {
+  createNewDonation,
+  createDonationController,
+  verifyPaymentController,
+} from "../controllers/PaymentController";
 
 const router = express.Router();
 

@@ -8,10 +8,9 @@ export class ResetPasswordUseCase {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new Error("User not found");
 
-
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
 
-    return this.userRepository.update(user.id,user);
+    return this.userRepository.update(user.id, user);
   }
 }

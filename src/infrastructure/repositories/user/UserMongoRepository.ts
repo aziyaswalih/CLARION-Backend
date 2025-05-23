@@ -40,7 +40,7 @@ export class UserMongoRepository implements IUserRepository {
       userData.role,
       userData.is_verified,
       userData.password,
-      userData.profilePic,
+      userData.profilePic
     );
   }
 
@@ -62,7 +62,10 @@ export class UserMongoRepository implements IUserRepository {
   }
 
   // Update a user's information
-  async update(id: string, updates: Partial<UserEntity>): Promise<UserEntity | null> {
+  async update(
+    id: string,
+    updates: Partial<UserEntity>
+  ): Promise<UserEntity | null> {
     const user = await UserModel.findByIdAndUpdate(id, updates, { new: true });
     if (!user) return null;
     return new UserEntity(
@@ -80,7 +83,11 @@ export class UserMongoRepository implements IUserRepository {
 
   // Soft-delete a user (mark as inactive)
   async delete(id: string): Promise<UserEntity | null> {
-    const user = await UserModel.findByIdAndUpdate(id, { isActive: false }, { new: true });
+    const user = await UserModel.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    );
     if (!user) return null;
     return new UserEntity(
       user.id,
